@@ -1,95 +1,95 @@
 //
-//  UIWebViewBlocksKitTest.m
+//  WKWebViewBlocksKitTest.m
 //  BlocksKit Unit Tests
 //
 
 @import XCTest;
 @import BlocksKit.Dynamic.UIKit;
 
-@interface UIWebViewBlocksKitTest : XCTestCase <UIWebViewDelegate>
+@interface WKWebViewBlocksKitTest : XCTestCase <WKNavigationDelegate>
 
 @end
 
-@implementation UIWebViewBlocksKitTest {
-	UIWebView *_subject;
+@implementation WKWebViewBlocksKitTest {
+	WKWebView *_subject;
 	BOOL shouldStartLoadDelegate, didStartLoadDelegate, didFinishLoadDelegate, didFinishWithErrorDelegate;
 }
 
 - (void)setUp {
-	_subject = [[UIWebView alloc] initWithFrame:CGRectZero];
+	_subject = [[WKWebView alloc] initWithFrame:CGRectZero];
 }
 
-- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
+- (BOOL)webView:(WKWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(WKNavigationType)navigationType {
 	shouldStartLoadDelegate = YES;
 	return YES;
 }
 
-- (void)webViewDidStartLoad:(UIWebView *)webView {
+- (void)webViewDidStartLoad:(WKWebView *)webView {
 	didStartLoadDelegate = YES;
 }
 
-- (void)webViewDidFinishLoad:(UIWebView *)webView {
+- (void)webViewDidFinishLoad:(WKWebView *)webView {
 	didFinishLoadDelegate = YES;
 }
 
-- (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error {
+- (void)webView:(WKWebView *)webView didFailLoadWithError:(NSError *)error {
 	didFinishWithErrorDelegate = YES;
 }
 
 - (void)testShouldStartLoad {
-	_subject.delegate = self;
-	
+	_subject.navigationDelegate = self;
+
 	__block BOOL shouldStartLoadBlock = NO;
-	_subject.bk_shouldStartLoadBlock = ^BOOL(UIWebView *view, NSURLRequest *req, UIWebViewNavigationType type) {
+	_subject.bk_shouldStartLoadBlock = ^BOOL(WKWebView *view, NSURLRequest *req, WKNavigationType type) {
 		shouldStartLoadBlock = YES;
 		return YES;
 	};
-	
-	BOOL shouldStartLoad = [_subject.bk_dynamicDelegate webView:_subject shouldStartLoadWithRequest:nil navigationType:UIWebViewNavigationTypeLinkClicked];
-	
+
+	BOOL shouldStartLoad = [_subject.bk_dynamicDelegate webView:_subject shouldStartLoadWithRequest:nil navigationType:WKNavigationTypeLinkActivated];
+
 	XCTAssertTrue(shouldStartLoad, @"Web view is allowed to load");
 	XCTAssertTrue(shouldStartLoadBlock, @"Block handler was called");
 	XCTAssertTrue(shouldStartLoadDelegate, @"Delegate was called");
 }
 
 - (void)testDidStartLoad {
-	_subject.delegate = self;
-	
+	_subject.navigationDelegate = self;
+
 	__block BOOL didStartLoadBlock = NO;
-	_subject.bk_didStartLoadBlock = ^(UIWebView *view) {
+	_subject.bk_didStartLoadBlock = ^(WKWebView *view) {
 		didStartLoadBlock = YES;
 	};
-	
+
 	[_subject.bk_dynamicDelegate webViewDidStartLoad:_subject];
-	
+
 	XCTAssertTrue(didStartLoadBlock, @"Block handler was called");
 	XCTAssertTrue(didStartLoadDelegate, @"Delegate was called");
 }
 
 - (void)testDidFinishLoad {
-	_subject.delegate = self;
-	
+	_subject.navigationDelegate = self;
+
 	__block BOOL didFinishLoadBlock = NO;
-	_subject.bk_didFinishLoadBlock = ^(UIWebView *view) {
+	_subject.bk_didFinishLoadBlock = ^(WKWebView *view) {
 		didFinishLoadBlock = YES;
 	};
-	
+
 	[_subject.bk_dynamicDelegate webViewDidFinishLoad:_subject];
-	
+
 	XCTAssertTrue(didFinishLoadBlock, @"Block handler was called");
 	XCTAssertTrue(didFinishLoadDelegate, @"Delegate was called");
 }
 
 - (void)testDidFinishWithError {
-	_subject.delegate = self;
-	
+	_subject.navigationDelegate = self;
+
 	__block BOOL didFinishWithErrorBlock = NO;
-	_subject.bk_didFinishWithErrorBlock = ^(UIWebView *view, NSError *err) {
+	_subject.bk_didFinishWithErrorBlock = ^(WKWebView *view, NSError *err) {
 		didFinishWithErrorBlock = YES;
 	};
-	
+
 	[_subject.bk_dynamicDelegate webView:_subject didFailLoadWithError:nil];
-	
+
 	XCTAssertTrue(didFinishWithErrorBlock, @"Block handler was called");
 	XCTAssertTrue(didFinishWithErrorDelegate, @"Delegate was called");
 }
