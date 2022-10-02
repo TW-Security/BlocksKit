@@ -313,18 +313,24 @@ static inline BOOL protocol_declaredSelector(Protocol *protocol, SEL selector)
 
 static Protocol *a2_classProtocol(Class _cls, NSString *suffix, NSString *description)
 {
-	Class cls = _cls;
-	while (cls) {
-		NSString *className = NSStringFromClass(cls);
-		NSString *protocolName = [className stringByAppendingString:suffix];
-		Protocol *protocol = objc_getProtocol(protocolName.UTF8String);
-		if (protocol) return protocol;
+    Class cls = _cls;
+    while (cls) {
+        NSString *className = NSStringFromClass(cls);
+        NSString *protocolName;
+        
+        if ([className hasSuffix:@"WKWebView"]) {
+            protocolName = @"WKNavigationDelegate";
+        } else {
+            protocolName = [className stringByAppendingString:suffix];
+        }
+        Protocol *protocol = objc_getProtocol(protocolName.UTF8String);
+        if (protocol) return protocol;
 
-		cls = class_getSuperclass(cls);
-	}
+        cls = class_getSuperclass(cls);
+    }
 
-	NSCAssert(NO, @"Specify protocol explicitly: could not determine %@ protocol for class %@ (tried <%@>)", description, NSStringFromClass(_cls), [NSStringFromClass(_cls) stringByAppendingString:suffix]);
-	return nil;
+    NSCAssert(NO, @"Specify protocol explicitly: could not determine %@ protocol for class %@ (tried <%@>)", description, NSStringFromClass(_cls), [NSStringFromClass(_cls) stringByAppendingString:suffix]);
+    return nil;
 }
 
 Protocol *a2_dataSourceProtocol(Class cls)
